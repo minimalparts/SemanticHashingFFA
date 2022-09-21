@@ -7,6 +7,7 @@ Usage:
   run.py cluster_data --dataset=<name>
   run.py train_fly --dataset=<name> [--raw]
   run.py evaluate --dataset=<name> [--raw]
+  run.py analysis --dataset=<name>
 
   run.py (-h | --help)
   run.py --version
@@ -19,6 +20,7 @@ Options:
   cluster_data                 Learn cluster names and apply clustering to the entire Wikipedia.
   train_fly                    Train the fruit fly over dimensionality-reduced representations.
   evaluate                     Run the fruit fly on val and test.
+  analysis                     xxxx
   --raw                        When training/applying fruit fly, use raw word vectors, without PCA/UMAP.
   -h --help                    Show this screen.
   --version                    Show version.
@@ -36,7 +38,7 @@ from codecarbon import EmissionsTracker
 from fly.train_models import train_umap, hack_umap_model, run_pca, hack_pca_model, train_birch, train_fly
 from fly.apply_models import apply_dimensionality_reduction, apply_fly
 from fly.label_clusters import generate_cluster_labels
-
+from fly.fly_analysis import inspect_projection
 
 
 def init_config(dataset):
@@ -155,4 +157,10 @@ if __name__ == '__main__':
             fly_path = config['FLY'][str(kc_size)+'-path']
             apply_fly(dataset, train_path, fly_path, best_logprob_power, best_top_words)
 
+    if args['analysis']:
+        spf = "./datasets/wikipedia/wikipedia_small.sp"
+        fly_path = None
+        logprob_power = 1
+        inspect_projection(dataset_name=dataset, spf=spf,
+                           fly_path=fly_path, logprob_power=logprob_power)
 
