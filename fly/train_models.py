@@ -159,21 +159,28 @@ def hack_umap_model(data=None, spf=None, logprob_power=None, top_words=None, inp
 def train_fly(data=None, spf=None, logprob_power=None, top_words=None, umap=True, num_trials=None, kc_size=None, k=None):
     print('--- Spawning fruit flies ---')
     dataset, _, labels = vectorize(data, spf, logprob_power, top_words)
-    labels = [l[0]for l in labels ]
     model_dir = join(Path(__file__).parent.resolve(),join("models/flies",data))
     Path(model_dir).mkdir(exist_ok=True, parents=True)
     max_thread = int(multiprocessing.cpu_count() * 0.3)
     if umap:
         train_mat = joblib.load(spf.replace('.sp','.umap.m'))
+        fly_path = join(model_dir, spf.split('/')[-1].replace('sp',str(kc_size)+'.fly.m'))
     else:
         train_mat = dataset
+        fly_path = join(model_dir, spf.split('/')[-1].replace('sp',str(kc_size)+'.fly.raw.m'))
+    
+    if data in ['reuters','tmc']:
+        multilabel = True
+    else:
+        multilabel = False
+        labels = [cls[0] for cls in labels]
+    
     pn_size = train_mat.shape[1]
     top_words = pn_size
     init_method = "random"
     eval_method = "similarity"
     proj_store = None
     hyperparameters = {'C':100,'num_iter':200,'num_nns':k}
-    fly_path = join(model_dir, spf.split('/')[-1].replace('sp',str(kc_size)+'.fly.m'))
 
     param_grid = {'wta': [10,30,50,70], 'proj_size' : [4,8,12,16]}
     grid = ParameterGrid(param_grid)
@@ -186,7 +193,7 @@ def train_fly(data=None, spf=None, logprob_power=None, top_words=None, umap=True
         '''Compute precision at k'''
         print("\n----- Evaluating",num_trials,"flies ----")
         with Parallel(n_jobs=max_thread, prefer="threads") as parallel:
-            delayed_funcs = [delayed(lambda x:x.evaluate(train_mat,train_mat,labels,labels))(fly) for fly in fly_list]
+            delayed_funcs = [delayed(lambda x:x.evaluate(train_mat,train_mat,labels,labels,multilabel,True))(fly) for fly in fly_list]
             score_list = parallel(delayed_funcs)
         scores = np.array([p[0] for p in score_list])
         print("\n\n----- Outputting score list for",num_trials,"flies ----")

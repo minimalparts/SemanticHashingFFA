@@ -60,6 +60,9 @@ def init_config(dataset):
         config['FLY']['32-path'] = 'None' 
         config['FLY']['64-path'] = 'None' 
         config['FLY']['128-path'] = 'None' 
+        config['FLY']['32-path-raw'] = 'None' 
+        config['FLY']['64-path-raw'] = 'None' 
+        config['FLY']['128-path-raw'] = 'None' 
         with open(config_path, 'w+') as configfile:
             config.write(configfile)
 
@@ -79,7 +82,7 @@ def update_config(dataset, section, k, v):
 if __name__ == '__main__':
     args = docopt(__doc__, version='Semantic hashing with the fruit fly, ver 0.1')
     dataset = args['--dataset']
-    tracker = EmissionsTracker(output_dir="./emission_tracking/tmc", project_name="tmc train_fly")
+    #tracker = EmissionsTracker(output_dir="./emission_tracking/agnews/", project_name="agnews train_fly")
 
     init_config(dataset)
 
@@ -134,25 +137,31 @@ if __name__ == '__main__':
         best_logprob_power = int(config['PREPROCESSING']['logprob_power'])
         best_top_words = int(config['PREPROCESSING']['top_words'])
 
-        tracker.start()
+        if not args['--raw']:    
+            tracker.start()
         for kc_size in [32, 64, 128]:
             if args['--raw']:
                 fly_path, _ = train_fly(dataset, train_path, best_logprob_power, best_top_words, False, num_trials, kc_size, k)
             else:
                 fly_path, _ = train_fly(dataset, train_path, best_logprob_power, best_top_words, True, num_trials, kc_size, k)
             update_config(dataset, 'FLY', str(kc_size)+'-path', fly_path)
-        tracker.stop()
+        if not args['--raw']:    
+            tracker.stop()
     
     if args['evaluate'] or args['pipeline']:
         _, config = read_config(dataset)
         best_logprob_power = int(config['PREPROCESSING']['logprob_power'])
         best_top_words = int(config['PREPROCESSING']['top_words'])
         for kc_size in [32,64,128]:
-            print('\n######')
+            print('\n#########')
             print('# ', kc_size, ' #')
-            print('######\n')
+            print('#########\n')
 
-            fly_path = config['FLY'][str(kc_size)+'-path']
-            apply_fly(dataset, train_path, fly_path, best_logprob_power, best_top_words)
+            if args['--raw']:
+                fly_path = config['FLY'][str(kc_size)+'-path-raw']
+                apply_fly(dataset, train_path, fly_path, best_logprob_power, best_top_words, True)
+            else:
+                fly_path = config['FLY'][str(kc_size)+'-path']
+                apply_fly(dataset, train_path, fly_path, best_logprob_power, best_top_words, False)
 
 

@@ -9,7 +9,7 @@ from scipy.sparse import vstack
 from collections import Counter
 import numpy as np
 import umap
-from fly.vectorizer import vectorize_scale, vectorize
+from fly.vectorizer import vectorize_scale, vectorize, scale
 from fly.fly import Fly
 
 
@@ -72,30 +72,16 @@ def apply_hacked_umap(data, ridge, spf, logprob_power, top_words, save=True):
     return dataset, titles
 
 
-def fly(fly, spf, data_titles, labels, save=True):
-    print('--- Apply fly to',spf,'---')
-    umap_mat = joblib.load(spf.replace('.sp','.umap.m'))
-    print("CHECKING SIZES:",len(labels),umap_mat.shape)
+def fly(fly_model=None, train_mat=None, mat=None, train_labels=None, spf_labels=None, multilabel=False):
+    print('--- Apply fly ---')
+    print(train_mat.shape,len(train_labels),mat.shape,len(spf_labels))
     #Compute precision at k using cluster IDs from Birch model
     print("Precision at k")
-    fly.eval_method = 'similarity'
-    score, hashed_data = fly.evaluate(umap_mat,umap_mat,labels,labels)
+    fly_model.eval_method = 'similarity'
+    score, hashed_data = fly_model.evaluate(mat, mat, spf_labels, spf_labels, multilabel, False)
     print("Classification")
-    fly.eval_method = 'classification'
-    score, hashed_data = fly.evaluate(umap_mat,umap_mat,labels,labels)
-    
-
-    #Save hashes 
-    if save:
-        title2hash = {}
-        for i in range(hashed_data.shape[0]):
-            b = hashed_data[i][0].todense()
-            #Transform long binary array into an int
-            bstr = ''.join(str(i) for i in np.asarray(b)[0])
-            #print(bstr,data_titles[i],cluster_labels[umap_labels[i]])
-            title2hash[data_titles[i]] = bstr
-            hfile = spf.replace('.sp','.fh')
-            joblib.dump(title2hash, hfile)
+    fly_model.eval_method = 'classification'
+    score, hashed_data = fly_model.evaluate(train_mat, mat, train_labels, spf_labels, multilabel, False)
     return score
 
 
@@ -108,16 +94,36 @@ def apply_dimensionality_reduction(data, spf_train, hacked_path, birch_model, lo
         apply_birch(birch_model, dataset, titles, spf, True)
             
 
-def apply_fly(data, spf_train, fly_path, logprob_power, top_words):
+def apply_fly(data, spf_train, fly_path, logprob_power, top_words, raw):
     
     spfs = [spf_train, spf_train.replace('train','val'), spf_train.replace('train','test')]
-    for spf in spfs:
-        print('\n##',spf,'##')
-        _, titles, labels = vectorize(data, spf, logprob_power, top_words)
+    data_split_labels = []
+    mats = []
 
-        if data != 'reuters' and data != 'tmc':
-            labels = [l[0]for l in labels ]
+    for spf in spfs:
+        if raw:
+            mat, titles, labels = vectorize(data, spf, logprob_power, top_words)
+            mat = scale(mat)
+        else:
+            train_mat = joblib.load(spf_train.replace('.sp','.umap.m'))
+            mat = joblib.load(spf.replace('.sp','.umap.m'))
+            _, _, labels = vectorize(data, spf, logprob_power, top_words)
+        data_split_labels.append(labels)
+        mats.append(mat)
+
+    for i in range(len(spfs)):
+        print('\n##',spfs[i],'##')
+
+        if data in ['reuters','tmc']:
+            multilabel = True
+        else:
+            multilabel = False
+            for j in range(len(data_split_labels)):
+                new_lbls = [cls[0] for cls in data_split_labels[j]]
+                data_split_labels[j] = new_lbls
+            
 
         print("--- FLY PATH",fly_path," ---")
         fly_model = joblib.load(fly_path)
-        fly(fly_model, spf, titles, labels, False)
+        print([len(d) for d in data_split_labels])
+        fly(fly_model, mats[0], mats[i], data_split_labels[0], data_split_labels[i], multilabel)
