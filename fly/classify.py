@@ -14,6 +14,8 @@ Options:
 from docopt import docopt
 import numpy as np
 from sklearn import linear_model
+from sklearn.preprocessing import MultiLabelBinarizer
+from sklearn.multiclass import OneVsRestClassifier
 import pickle
 
 #print(device)
@@ -37,8 +39,16 @@ def make_output(classes,class_ids):
     return [class_ids[c] for c in classes]
 
 
-def train_model(m_train,classes_train,m_val,classes_val,C,num_iter):
-    lm = linear_model.LogisticRegression(multi_class='ovr', solver='liblinear',
+def train_model(m_train,classes_train,m_val,classes_val,C,num_iter,multiclass):
+    if multiclass:
+        mlb = MultiLabelBinarizer()
+        mlb.fit(classes_train)
+        classes_train = mlb.transform(classes_train)
+        classes_val = mlb.transform(classes_val)
+        lm = OneVsRestClassifier(linear_model.LogisticRegression(multi_class='ovr', solver='liblinear',
+                                         max_iter=num_iter, C=C, verbose=0))
+    else:
+        lm = linear_model.LogisticRegression(multi_class='ovr', solver='liblinear',
                                          max_iter=num_iter, C=C, verbose=0)
     lm.fit(m_train, classes_train)
     score = lm.score(m_val,classes_val)
