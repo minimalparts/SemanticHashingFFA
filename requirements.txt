@@ -1,0 +1,6 @@
+docopt
+joblib
+codecarbon
+dataclasses
+umap-learn
+sentencepiece
