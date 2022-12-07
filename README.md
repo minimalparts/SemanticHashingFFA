@@ -21,6 +21,11 @@ Install requirements:
 
     pip install -r requirements.txt
 
+## Datasets
+
+The datasets should be downloaded from their respective copyright holders. For testing purposes, though, we include the Wikipedia data used in our paper. It is already preprocessed and available at *datasets/wikipedia*.
+
+
 ## General structures
 
 The Fruit Fly Algorithm is implemented in directory *fly*, while the Binary Neural Network
@@ -56,6 +61,8 @@ The script *run.py* controls all the experiments.
       --raw                        When training/applying fruit fly, use raw word vectors, without PCA/UMAP.
       -h --help                    Show this screen.
       --version                    Show version.
+
+For the Wikipedia dataset, for instance, run with with the flag *--dataset=wiki*.
 
 The performances are recorded under the directory *baseline* and *fly*, while the
 energy consumptions are in the directory *emission_tracking*.
