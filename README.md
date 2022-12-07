@@ -5,7 +5,8 @@ Comparing Binary Neural Networks and the Fruit Fly Algorithm on Document Represe
 
 The paper was presented at SustaiNLP workshop, a venue dedicated for small, efficient 
 and environmental friendly models for natural language processing. The workshop was
-organized along with EMNLP conference 2022. The paper is part of the [PeARS project](https://pearsproject.org/).
+organized along with EMNLP conference 2022. The paper is part of the [PeARS project](https://pearsproject.org/), 
+which offers much more fruit fly code [here](https://github.com/PeARSearch).
 
 We acknowledge [NLnet](https://nlnet.nl/) for financial support. 
 
@@ -13,8 +14,8 @@ We acknowledge [NLnet](https://nlnet.nl/) for financial support.
 
 We recommend creating a virtual environment with Python 3.6 or above. Clone our code:
 
-    git clone https://github.com/PeARSearch/PeARS-fruit-fly.git
-    cd PeARS-fruit-fly/
+    git clone https://github.com/minimalparts/SemanticHashingFFA.git
+    cd SemanticHashingFFA/
 
 Install requirements:
 
