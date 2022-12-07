@@ -51,6 +51,7 @@ def init_config(dataset, is_running_lsh):
         return 1
     else:
         config = configparser.ConfigParser()
+
         if is_running_lsh:
             config['GENERIC'] = {}
             config['GENERIC']['dataset'] = 'None'
@@ -159,6 +160,7 @@ if __name__ == '__main__':
         best_logprob_power = int(config['PREPROCESSING']['logprob_power'])
         best_top_words = int(config['PREPROCESSING']['top_words'])
 
+
         if not args['--raw']:
             tracker.start()
         for kc_size in [32, 64, 128]:
@@ -166,6 +168,7 @@ if __name__ == '__main__':
                 fly_path, _ = train_fly(dataset, train_path, best_logprob_power, best_top_words, False, num_trials,
                                         kc_size, k)
             else:
+
                 fly_path, _ = train_fly(dataset, train_path, best_logprob_power, best_top_words, True, num_trials,
                                         kc_size, k)
             update_config(dataset, 'FLY', str(kc_size) + '-path', fly_path)
@@ -176,6 +179,7 @@ if __name__ == '__main__':
         _, config = read_config(dataset)
         best_logprob_power = int(config['PREPROCESSING']['logprob_power'])
         best_top_words = int(config['PREPROCESSING']['top_words'])
+
         for kc_size in [32, 64, 128]:
             print('\n#########')
             print('# ', kc_size, ' #')

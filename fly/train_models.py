@@ -190,6 +190,7 @@ def train_fly(data=None, spf=None, logprob_power=None, top_words=None, umap=True
     init_method = "random"
     eval_method = "similarity"
     proj_store = None
+
     hyperparameters = {'C': 100, 'num_iter': 200, 'num_nns': k}
 
     param_grid = {'wta': [10, 30, 50, 70], 'proj_size': [4, 8, 12, 16]}
@@ -204,8 +205,7 @@ def train_fly(data=None, spf=None, logprob_power=None, top_words=None, umap=True
         '''Compute precision at k'''
         print("\n----- Evaluating", num_trials, "flies ----")
         with Parallel(n_jobs=max_thread, prefer="threads") as parallel:
-            delayed_funcs = [delayed(lambda x: x.evaluate(train_mat, train_mat, labels, labels, multilabel, True))(fly)
-                             for fly in fly_list]
+            delayed_funcs = [delayed(lambda x:x.evaluate(train_mat,train_mat,labels,labels,multilabel,True))(fly) for fly in fly_list]
             score_list = parallel(delayed_funcs)
         scores = np.array([p[0] for p in score_list])
         print("\n\n----- Outputting score list for", num_trials, "flies ----")
