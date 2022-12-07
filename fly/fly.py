@@ -68,7 +68,7 @@ class Fly:
         self.projections = lil_matrix(self.projections)
         self.kc_size+=num_new_rows
         return self.kc_size
- 
+
     def projection_store(self,proj_store):
         weight_mat = np.zeros((self.kc_size, self.pn_size))
         self.proj_store = proj_store.copy()
@@ -80,7 +80,7 @@ class Fly:
         #print(len(not_in_store_idx),'IDs not in store')
         used_idx = sidx.copy()
         c = 0
-        
+
         while c < self.kc_size:
             for i in range(len(self.proj_store)):
                 p = self.proj_store[i]
@@ -103,7 +103,7 @@ class Fly:
         if not self.is_evaluated:
             return 0
         if DATASET == "all":
-            return np.mean(self.val_scores) 
+            return np.mean(self.val_scores)
         else:
             return np.sum(self.val_scores)
 

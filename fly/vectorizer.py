@@ -12,7 +12,7 @@ def vectorize(lang, spf, logprob_power, top_words):
     '''Takes input file and return vectorized /scaled dataset'''
     vectorizer, logprobs = init_vectorizer(lang)
     dataset, wikititles, wikicats = read_n_encode_dataset(spf, vectorizer, logprobs, logprob_power, top_words)
-    dataset = dataset.todense()
+    dataset = dataset.toarray()
     return dataset, wikititles, wikicats
 
 def scale(dataset):
